@@ -24,6 +24,7 @@
         /* 850 x 700 */
         .container-scores, .container-players { 
             background: #0f3854;
+            background-image: url("images/bg-gradient.jpg");
             background: radial-gradient(ellipse at center,  #0a2e38  0%, #000000 70%);
             font-size: .5em;
             width: 50%;
@@ -244,7 +245,7 @@
                     break;
                 case "turnover":
                     isWaiting = true;
-                    gameEvent("Turnover " + settings.currentTeam, 3000);
+                    gameEvent("Turnover " + settings.currentTeam,   );
                     break;
                 case "score":
                     isWaiting = true;

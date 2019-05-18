@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-size: 100%;
+            height: 100%;
+            font-size: 8vw;
+        }
+        .super-container {
+            display: flex;
+            height: 100%;
+        }
+        /* 850 x 700 */
+        .container-scores, .container-players { 
+            background: #0f3854;
+            background: radial-gradient(ellipse at center,  #0a2e38  0%, #000000 70%);
+            font-size: .5em;
+            width: 50%;
+            padding: .5rem;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: center;
+            color: #daf6ff;
+            text-shadow: 0 0 20px rgba(10, 175, 230, 1),  0 0 20px rgba(10, 175, 230, 0);
+            position:relative;
+        }
+        .container-players .inner {
+            font-size: .5em;
+        }
+        .container-players h1 {
+            margin: 0 0 .5em;
+        }
+        .scores, .teams {
+            margin: auto;
+            width: 80%
+        }
+        .team-name {
+            padding: 0 .33em .33em;
+            font-size: 1.5em;
+            display: inline-block;
+            width: 40%;
+        }
+        .score {
+            padding: 0 0 .3em;
+            font-size: 2em;
+            display: inline-block;
+            width: 30%;
+        }
+        .sep {
+            padding: 0em 0;
+            font-size: 2em;
+            display: inline-block;
+            width: 10%;
+        }
+        .player-table {
+            width: 80%;
+            margin: auto;
+            border-spacing: .5em;
+            border-collapse: separate;
+        }
+        .player-table th {
+            width: 45%;
+            padding: .5em;
+            border-bottom: #ddd dashed .05em;
+        }
+        .game-event {
+            position: absolute;
+            width: 90%;
+            font-size: 1.5em;
+            top: 50%;
+            margin-top: -1em;
+            color: #da6767;
+            font-weight: bold;
+            animation-name: game-event;
+            animation-duration: 1s;
+        }
+        @keyframes game-event {
+            from {transform: scale(0.5)}
+            to {transform:scale(1)}
+        }
+
+    </style>
+</head>
+<body>
+    <div class="super-container">
+        <div class="container-players">
+            <div class="inner">
+                <h1>Ultimate Disc</h1>
+                <table class="player-table">
+                    <thead><tr><th>Red</th><th>Blue</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="container-scores">
+            <div class="status">
+                <div class="teams">
+                    <span class="red team-name">Red</span>
+                    <span class="blue team-name">Blue</span>
+                </div>
+                <div class="scores">
+                    <span class="red score">5</span> <span class="sep">:</span> 
+                    <span class="blue score">8</span>
+                </div>
+            </div>
+            <div class="holder"><span class="player">C3rb3rus</span></div>
+            <div class="remaining"><span class="time">15:00</span></div>
+        </div>
+    </div>
+    <script>
+        function simpleEscape($str, $char = "|") {
+            return $str.replace("\\", "\\\\").replace($char, `\\${$char}`)
+        }
+        
+        function simpleUnescape($str, $char = "|") {
+            return $str.replace(`\\${char}`, char).replace("\\\\", "\\")
+        }
+        
+        function list2escaped($list, $char = "|") {
+            $str = simpleEscape($list.shift(), $char) || "";
+            while(($next = $list.shift()))  {
+                $str += $char + simpleEscape($next.toString(), $char);
+            }
+            return $str;
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+        }
+    
+        function escaped2list($str, $char = "|") {
+            if (!$str) {
+            return [];
+            }
+            $keywords = [
+                escapeRegExp("\\\\"),
+                escapeRegExp("\\" + $char,),
+                escapeRegExp($char),
+            ];
+            
+            $parts = $str.split(new RegExp("(" + $keywords.join("|") + ")", "g"));
+            $parts.push("");
+            for(let $i = $parts.length - 2; $i >= 0; $i--) {
+                switch ($parts[$i]) {
+                    case "\\\\":
+                        $parts.splice($i, 2, '\\' + $parts[$i + 1]);
+                        break;
+                    case "\\$char":
+                        $parts.splice($i, 2, $char + $parts[$i + 1]);
+                        break;
+                    case $char:
+                        $parts.splice($i, 1, "");
+                        break;
+                    default:
+                        $parts.splice($i, 2, $parts[$i] + $parts[$i + 1]);
+                        break;
+                }
+            }
+            return $parts;
+        }
+
+        function parseHash(s) {
+            if (s == "") return {};
+            const parts = escaped2list(s);
+            const res = {};
+            res.redScore = Number.parseInt(parts[0]);
+            res.blueScore = Number.parseInt(parts[1]);
+            res.currentHolder = parts[2];
+            res.currentTeam = parts[3];
+            res.remainingTime = Number.parseInt(parts[4]);
+            res.event = parts[5];
+            let teams = parts.slice(6);
+            let current = [];
+            res.redPlayers = [];
+            res.bluePlayers = [];
+
+            for (let i = 0; i < teams.length; i++) {
+                const name = teams[i];
+                if (name == "team-red") {
+                    res.redPlayers = current = [];
+                } else if (name == "team-blue") {
+                    res.bluePlayers = current = [];
+                } else {
+                    current.push(name);
+                }
+            }
+            return res;
+        }
+        function msToTime(s) {
+            var ms = s % 1000;
+            s = (s - ms) / 1000;
+            var secs = s % 60;
+            s = (s - secs) / 60;
+            var mins = s % 60;
+            var hrs = (s - mins) / 60;
+
+            // return hrs + ':' + mins + ':' + secs + '.' + ms;
+            return mins.toString().padStart(2, 0) + ':' + secs.toString().padStart(2, 0);
+        }
+
+        let isWaiting = true;
+        let currentTime = 900000;
+
+        setInterval(() => {
+            if (!isWaiting) {
+                currentTime -= 1000;
+                if (currentTime < 0) {
+                    currentTime = 0;
+                }
+            }
+            document.querySelector('.time').textContent = msToTime(currentTime);
+        }, 1000);
+
+        function gameEvent(text, timeout = 1000) {
+            let div = document.createElement('div');
+            div.textContent = text;
+            div.setAttribute('class', 'game-event ' + event);
+            let container = document.querySelector('.container-scores')
+            container.appendChild(div);
+            setTimeout(() => {
+                container.removeChild(div);
+            }, timeout);
+        }
+
+        function update(settings) {
+            document.querySelector('.red.score').textContent = settings.redScore;
+            document.querySelector('.blue.score').textContent = settings.blueScore;
+            document.querySelector('.player').textContent = settings.currentHolder;
+            currentTime = settings.remainingTime;
+            switch (settings.event) {
+                case "catch":
+                    isWaiting = false;
+                    break;
+                case "turnover":
+                    isWaiting = true;
+                    gameEvent("Turnover " + settings.currentTeam, 3000);
+                    break;
+                case "score":
+                    isWaiting = true;
+                    gameEvent("Score!", 3000);
+                    break;
+                case "end-game":
+                    isWaiting = true;
+                    gameEvent(settings.redScore > settings.blueScore ? "Red Team Wins" : (settings.redScore < settings.blueScore ? "Blue Team Wins" : "Game is a Tie", 3000));
+                    break;
+                case "start-game":
+                    isWaiting = true;
+                    gameEvent(4);
+                    setTimeout(() => gameEvent(3), 1010);
+                    setTimeout(() => gameEvent(2), 2010);
+                    setTimeout(() => gameEvent(1), 3010);
+                    setTimeout(() => gameEvent("Match Begins", 3000), 4010);
+                    break;
+            }
+            let max = settings.redPlayers.length;
+            max = settings.bluePlayers.length > max ? settings.bluePlayers.length : max;
+            let playerTable = "";
+            for (let i = 0; i < max; i++) {
+                playerTable += "<tr><td>" + (settings.redPlayers[i] || "") + "</td><td>" + (settings.bluePlayers[i] || "") + "</td></tr>";
+            }
+            document.querySelector('.player-table tbody').innerHTML = playerTable;
+        }
+
+        let settings  = parseHash(location.hash.substring(1));
+        update(settings);
+        window.addEventListener("hashchange", () => {
+            settings = parseHash(location.hash.substring(1));
+            update(settings);
+        }, false);
+    </script>
+</body>
+</html>

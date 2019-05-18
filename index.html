@@ -222,6 +222,7 @@
         }, 1000);
 
         function gameEvent(text, timeout) {
+            timeout = timeout || 1000;
             let div = document.createElement('div');
             div.textContent = text;
             div.setAttribute('class', 'game-event ' + event);
@@ -255,7 +256,7 @@
                     break;
                 case "start-game":
                     isWaiting = true;
-                    gameEvent(4, 10);
+                    gameEvent(4);
                     setTimeout(() => gameEvent(3), 1010);
                     setTimeout(() => gameEvent(2), 2010);
                     setTimeout(() => gameEvent(1), 3010);

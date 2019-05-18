@@ -118,15 +118,15 @@
         </div>
     </div>
     <script>
-        function simpleEscape($str, $char = "|") {
+        function simpleEscape($str, $char) {
             return $str.replace("\\", "\\\\").replace($char, `\\${$char}`)
         }
         
-        function simpleUnescape($str, $char = "|") {
+        function simpleUnescape($str, $char) {
             return $str.replace(`\\${char}`, char).replace("\\\\", "\\")
         }
         
-        function list2escaped($list, $char = "|") {
+        function list2escaped($list, $char) {
             $str = simpleEscape($list.shift(), $char) || "";
             while(($next = $list.shift()))  {
                 $str += $char + simpleEscape($next.toString(), $char);
@@ -138,7 +138,7 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
         }
     
-        function escaped2list($str, $char = "|") {
+        function escaped2list($str, $char) {
             if (!$str) {
             return [];
             }
@@ -171,7 +171,7 @@
 
         function parseHash(s) {
             if (s == "") return {};
-            const parts = escaped2list(s);
+            const parts = escaped2list(s, "|");
             const res = {};
             res.redScore = Number.parseInt(parts[0]);
             res.blueScore = Number.parseInt(parts[1]);

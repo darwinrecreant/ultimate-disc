@@ -206,11 +206,17 @@
             var hrs = (s - mins) / 60;
 
             // return hrs + ':' + mins + ':' + secs + '.' + ms;
-            return mins.toString().padStart(2, 0) + ':' + secs.toString().padStart(2, 0);
+            return pad(mins, 2) + ':' + pad(secs, 2);
         }
 
         let isWaiting = true;
         let currentTime = 900000;
+
+        function pad(n, width, z) {
+            z = z || '0';
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+        }
 
         setInterval(() => {
             if (!isWaiting) {
@@ -219,7 +225,7 @@
             if (currentTime < 0) {
                 currentTime = 0;
             }
-            document.querySelector('.time').textContent = msToTime(currentTime);
+            document.querySelector('.time').textContent = msToTime(parseInt(currentTime));
         }, 1000);
 
         function gameEvent(text, timeout) {
@@ -237,7 +243,7 @@
         function update(settings) {
             document.querySelector('.red.score').textContent = settings.redScore;
             document.querySelector('.blue.score').textContent = settings.blueScore;
-            document.querySelector('.player').textContent = settings.currentHolder;
+            document.querySelector('.player').textContent = settings.currentHolder == "" ? "-" : settings.currentHolder;
             currentTime = settings.remainingTime;
             switch (settings.event) {
                 case "catch":
@@ -257,10 +263,11 @@
                     break;
                 case "start-game":
                     isWaiting = true;
-                    gameEvent(4);
-                    setTimeout(() => gameEvent(3), 1010);
-                    setTimeout(() => gameEvent(2), 2010);
-                    setTimeout(() => gameEvent(1), 3010);
+                    gameEvent(5);
+                    setTimeout(() => gameEvent(4), 1010);
+                    setTimeout(() => gameEvent(3), 2010);
+                    setTimeout(() => gameEvent(2), 3010);
+                    setTimeout(() => gameEvent(1), 4010);
                     setTimeout(() => gameEvent("Match Begins", 3000), 4010);
                     break;
             }
@@ -273,8 +280,10 @@
             document.querySelector('.player-table tbody').innerHTML = playerTable;
         }
 
-        let settings  = parseHash(location.hash.substring(1));
-        update(settings);
+        try {
+            let settings  = parseHash(location.hash.substring(1));
+            update(settings);
+        } catch (e) {}
         window.addEventListener("hashchange", () => {
             settings = parseHash(location.hash.substring(1));
             update(settings);

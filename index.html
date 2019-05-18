@@ -144,7 +144,7 @@
             }
             $keywords = [
                 escapeRegExp("\\\\"),
-                escapeRegExp("\\" + $char,),
+                escapeRegExp("\\" + $char),
                 escapeRegExp($char),
             ];
             
@@ -214,14 +214,14 @@
         setInterval(() => {
             if (!isWaiting) {
                 currentTime -= 1000;
-                if (currentTime < 0) {
-                    currentTime = 0;
-                }
+            }
+            if (currentTime < 0) {
+                currentTime = 0;
             }
             document.querySelector('.time').textContent = msToTime(currentTime);
         }, 1000);
 
-        function gameEvent(text, timeout = 1000) {
+        function gameEvent(text, timeout) {
             let div = document.createElement('div');
             div.textContent = text;
             div.setAttribute('class', 'game-event ' + event);
@@ -255,7 +255,7 @@
                     break;
                 case "start-game":
                     isWaiting = true;
-                    gameEvent(4);
+                    gameEvent(4, 10);
                     setTimeout(() => gameEvent(3), 1010);
                     setTimeout(() => gameEvent(2), 2010);
                     setTimeout(() => gameEvent(1), 3010);
